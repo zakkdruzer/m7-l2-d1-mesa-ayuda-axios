@@ -1,29 +1,100 @@
 import { ref } from 'vue'
 import { getTickets, getTicketById, createTicket } from '@/services/ticketsService'
 
-export function useTickets() {
-  const tickets        = ref([])
-  const meta           = ref(null)   // { total, pagina, totalPaginas, ... }
-  const ticket         = ref(null)   // detalle del ticket seleccionado
-  const cargandoLista  = ref(false)
-  const cargandoDetalle= ref(false)
-  const errorLista     = ref(null)
-  const errorDetalle   = ref(null)
+const tickets = ref([])
+const meta = ref(null)
+const ticketDetalle = ref(null)
 
+const cargandoLista = ref(false)
+const cargandoDetalle = ref(false)
+const creandoTicket = ref(false)
+
+const errorLista = ref('')
+const errorDetalle = ref('')
+const erroresFormulario = ref({})
+
+export function useTickets() {
   async function cargarTickets(params = {}) {
     cargandoLista.value = true
-    errorLista.value    = null
+    errorLista.value = ''
+
     try {
       const { data } = await getTickets(params)
-      tickets.value = data.datos   // ← leer la propiedad correcta
-      meta.value    = data.meta
+      tickets.value = data.datos
+      meta.value = data.meta
     } catch {
-      errorLista.value = 'No se pudo cargar la lista. Revisa la conexión.'
+      errorLista.value = 'No se pudo cargar la lista de tickets.'
     } finally {
-      cargandoLista.value = false  // se apaga siempre, haya error o no
+      cargandoLista.value = false
     }
   }
-  // ... (cargarDetalle y enviarTicket abajo)
-  return { tickets, meta, ticket, cargandoLista, cargandoDetalle,
-           errorLista, errorDetalle, cargarTickets }
+
+  async function cargarDetalle(id) {
+    cargandoDetalle.value = true
+    errorDetalle.value = ''
+    ticketDetalle.value = null
+
+    try {
+      const { data } = await getTicketById(id)
+      ticketDetalle.value = data
+    } catch (error) {
+      if (error.response?.status === 404) {
+        errorDetalle.value = `No existe el ticket con id ${id}.`
+      } else {
+        errorDetalle.value = 'No se pudo cargar el detalle del ticket.'
+      }
+    } finally {
+      cargandoDetalle.value = false
+    }
+  }
+
+  async function crearNuevoTicket(payload) {
+    creandoTicket.value = true
+    erroresFormulario.value = {}
+
+    try {
+      const { data } = await createTicket(payload)
+      tickets.value.unshift(data)
+
+      if (meta.value) {
+        meta.value.total += 1
+      }
+
+      return { ok: true, data }
+    } catch (error) {
+      if (error.response?.status === 422) {
+        erroresFormulario.value = error.response.data.errores ?? {}
+      }
+
+      return { ok: false, error }
+    } finally {
+      creandoTicket.value = false
+    }
+  }
+
+  function limpiarDetalle() {
+    ticketDetalle.value = null
+    errorDetalle.value = ''
+  }
+
+  function limpiarErroresFormulario() {
+    erroresFormulario.value = {}
+  }
+
+  return {
+    tickets,
+    meta,
+    ticketDetalle,
+    cargandoLista,
+    cargandoDetalle,
+    creandoTicket,
+    errorLista,
+    errorDetalle,
+    erroresFormulario,
+    cargarTickets,
+    cargarDetalle,
+    crearNuevoTicket,
+    limpiarDetalle,
+    limpiarErroresFormulario,
+  }
 }
