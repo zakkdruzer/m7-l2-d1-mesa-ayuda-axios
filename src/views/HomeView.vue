@@ -1,18 +1,37 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useTickets } from '../composables/useTickets'
+import TicketCard from '../components/TicketCard.vue'
+import TicketDetalle from '../components/TicketDetalle.vue'
 
 const {
   tickets,
   meta,
+  ticketDetalle,
   cargandoLista,
+  cargandoDetalle,
   errorLista,
+  errorDetalle,
   cargarTickets,
+  cargarDetalle,
+  limpiarDetalle,
 } = useTickets()
+
+const mostrarDetalle = ref(false)
 
 onMounted(() => {
   cargarTickets()
 })
+
+async function verDetalle(id) {
+  mostrarDetalle.value = true
+  await cargarDetalle(id)
+}
+
+function cerrarDetalle() {
+  mostrarDetalle.value = false
+  limpiarDetalle()
+}
 </script>
 
 <template>
@@ -33,11 +52,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <p>DEBUG loading: {{ cargandoLista }}</p>
-    <p>DEBUG error: {{ errorLista }}</p>
-    <p>DEBUG tickets length: {{ tickets.length }}</p>
-    <p>DEBUG total meta: {{ meta?.total }}</p>
-
     <p v-if="cargandoLista">Cargando tickets...</p>
 
     <p v-else-if="errorLista" class="mensaje-error">
@@ -49,17 +63,20 @@ onMounted(() => {
     </p>
 
     <div v-else class="ticket-grid">
-      <article
+      <TicketCard
         v-for="ticket in tickets"
         :key="ticket.id ?? ticket.codigo"
-        style="border:1px solid red; padding:12px; margin-bottom:12px; background:white;"
-      >
-        <p>ID: {{ ticket.id ?? ticket.codigo }}</p>
-        <p>Asunto: {{ ticket.asunto }}</p>
-        <p>Prioridad: {{ ticket.prioridad }}</p>
-        <p>Estado: {{ ticket.estado }}</p>
-        <p>Solicitante: {{ ticket.solicitante }}</p>
-      </article>
+        :ticket="ticket"
+        @ver-detalle="verDetalle"
+      />
     </div>
+
+    <TicketDetalle
+      v-if="mostrarDetalle"
+      :ticket="ticketDetalle"
+      :cargando="cargandoDetalle"
+      :error="errorDetalle"
+      @cerrar="cerrarDetalle"
+    />
   </section>
 </template>

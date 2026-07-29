@@ -1,8 +1,17 @@
 <script setup>
 defineProps({
-  ticket: Object,
-  cargando: Boolean,
-  error: String,
+  ticket: {
+    type: Object,
+    default: null,
+  },
+  cargando: {
+    type: Boolean,
+    default: false,
+  },
+  error: {
+    type: String,
+    default: '',
+  },
 })
 
 defineEmits(['cerrar'])
@@ -15,13 +24,18 @@ function formatearFecha(fecha) {
 
 <template>
   <aside class="detalle">
-    <button class="btn btn--ghost" @click="$emit('cerrar')">Cerrar</button>
+    <button class="btn btn--ghost" @click="$emit('cerrar')">
+      Cerrar
+    </button>
 
     <p v-if="cargando">Cargando detalle...</p>
-    <p v-else-if="error" class="mensaje-error">{{ error }}</p>
+
+    <p v-else-if="error" class="mensaje-error">
+      {{ error }}
+    </p>
 
     <template v-else-if="ticket">
-      <h3>{{ ticket.asunto }}</h3>
+      <h2>{{ ticket.asunto }}</h2>
       <p><strong>ID:</strong> {{ ticket.id ?? ticket.codigo }}</p>
       <p><strong>Estado:</strong> {{ ticket.estado }}</p>
       <p><strong>Prioridad:</strong> {{ ticket.prioridad }}</p>

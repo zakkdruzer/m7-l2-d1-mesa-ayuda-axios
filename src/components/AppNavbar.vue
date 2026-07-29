@@ -16,10 +16,11 @@ function salir() {
     <router-link to="/" class="navbar__brand">Mesa de Ayuda</router-link>
 
     <div class="navbar__right">
+      <span v-if="auth.usuario" class="navbar__user">
+        {{ auth.usuario.username }} ({{ auth.usuario.rol }})
+      </span>
+
       <template v-if="auth.estaAutenticado">
-        <span v-if="auth.usuario">
-  {{ auth.usuario.username }} ({{ auth.usuario.rol }})
-</span>
         <router-link to="/nuevo-ticket" class="btn btn--secondary">
           Nuevo ticket
         </router-link>
