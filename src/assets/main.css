@@ -1,0 +1,175 @@
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --border: #dbe3f0;
+  --danger: #dc2626;
+  --success: #15803d;
+  --high: #b91c1c;
+  --medium: #b45309;
+  --low: #166534;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.navbar,
+.page,
+.auth-form,
+.ticket-card,
+.detalle {
+  background: var(--surface);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ticket-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.ticket-card {
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.ticket-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.badge--alta {
+  background: #fee2e2;
+  color: var(--high);
+}
+
+.badge--media {
+  background: #fef3c7;
+  color: var(--medium);
+}
+
+.badge--baja {
+  background: #dcfce7;
+  color: var(--low);
+}
+
+.detalle {
+  margin-top: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.auth-form,
+.ticket-form {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.form-group {
+  display: grid;
+  gap: 6px;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn--secondary {
+  background: white;
+  border: 1px solid var(--border);
+}
+
+.btn--ghost {
+  background: transparent;
+}
+
+.mensaje-error {
+  color: var(--danger);
+}
+
+.mensaje-ok {
+  color: var(--success);
+}
