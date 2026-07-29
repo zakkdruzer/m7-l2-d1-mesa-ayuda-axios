@@ -1,60 +1,77 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 
 const router = useRouter()
-const auth = useAuth()
 
-const username = ref('')
-const password = ref('')
-const cargando = ref(false)
-const errorMsg = ref('')
+const {
+  iniciarSesion,
+  cargandoLogin,
+  errorLogin,
+} = useAuth()
 
-const formularioValido = computed(() => {
-  return username.value.trim() !== '' && password.value.trim() !== ''
+const form = reactive({
+  username: '',
+  password: '',
+})
+
+const formularioCompleto = computed(() => {
+  return form.username.trim() !== '' && form.password.trim() !== ''
 })
 
 async function handleSubmit() {
-  if (!formularioValido.value || cargando.value) return
+  if (!formularioCompleto.value || cargandoLogin.value) return
 
-  cargando.value = true
-  errorMsg.value = ''
+  const resultado = await iniciarSesion({
+    username: form.username,
+    password: form.password,
+  })
 
-  try {
-    await auth.iniciarSesion(username.value, password.value)
-    password.value = ''
+  if (resultado.ok) {
     router.push('/')
-  } catch (error) {
-    errorMsg.value =
-      error.response?.status === 401
-        ? 'Usuario o contraseña incorrectos.'
-        : 'No se pudo iniciar sesión.'
-  } finally {
-    cargando.value = false
   }
 }
 </script>
 
 <template>
-  <section class="auth-page">
-    <form class="auth-form" @submit.prevent="handleSubmit">
-      <h1>Iniciar sesión</h1>
+  <section class="login-page">
+    <h1>Iniciar sesión</h1>
 
-      <label for="username">Usuario</label>
-      <input id="username" v-model="username" type="text" autocomplete="username" />
+    <p>DEBUG loading: {{ cargandoLogin }}</p>
+    <p>DEBUG error: {{ errorLogin }}</p>
 
-      <label for="password">Contraseña</label>
-      <input id="password" v-model="password" type="password" autocomplete="current-password" />
+    <form class="login-form" @submit.prevent="handleSubmit">
+      <div class="campo">
+        <label for="username">Usuario</label>
+        <input
+          id="username"
+          v-model="form.username"
+          type="text"
+          autocomplete="username"
+        />
+      </div>
 
-      <p v-if="errorMsg" class="mensaje-error">{{ errorMsg }}</p>
+      <div class="campo">
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          v-model="form.password"
+          type="password"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <p v-if="errorLogin" class="mensaje-error">
+        {{ errorLogin }}
+      </p>
 
       <button
-        type="submit"
         class="btn btn--primary"
-        :disabled="!formularioValido || cargando"
+        type="submit"
+        :disabled="!formularioCompleto || cargandoLogin"
       >
-        {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+        {{ cargandoLogin ? 'Ingresando...' : 'Entrar' }}
       </button>
     </form>
   </section>

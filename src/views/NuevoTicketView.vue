@@ -1,44 +1,61 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useTickets } from '../composables/useTickets'
 
-const auth = useAuth()
-const ticketsState = useTickets()
+const router = useRouter()
+const { estaAutenticado } = useAuth()
+const {
+  crearNuevoTicket,
+  creandoTicket,
+  erroresFormulario,
+  limpiarErroresFormulario,
+} = useTickets()
 
-const formulario = reactive({
+const mensajeExito = ref('')
+
+const form = reactive({
   asunto: '',
   descripcion: '',
-  prioridad: '',
+  prioridad: 'baja',
   solicitante: '',
 })
 
-const exito = ref('')
-const errorGeneral = ref('')
+const formularioCompleto = computed(() => {
+  return (
+    form.asunto.trim() !== '' &&
+    form.descripcion.trim() !== '' &&
+    form.prioridad.trim() !== '' &&
+    form.solicitante.trim() !== ''
+  )
+})
 
 async function handleSubmit() {
-  if (ticketsState.creandoTicket) return
+  if (!estaAutenticado.value || !formularioCompleto.value || creandoTicket.value) return
 
-  exito.value = ''
-  errorGeneral.value = ''
-  ticketsState.limpiarErroresFormulario()
+  mensajeExito.value = ''
+  limpiarErroresFormulario()
 
-  const response = await ticketsState.crearNuevoTicket({ ...formulario })
+  const resultado = await crearNuevoTicket({
+    asunto: form.asunto,
+    descripcion: form.descripcion,
+    prioridad: form.prioridad,
+    solicitante: form.solicitante,
+  })
 
-  if (response.ok) {
-    formulario.asunto = ''
-    formulario.descripcion = ''
-    formulario.prioridad = ''
-    formulario.solicitante = ''
-    exito.value = 'Ticket creado correctamente.'
+  if (resultado.ok) {
+    mensajeExito.value = 'Ticket creado correctamente.'
+
+    form.asunto = ''
+    form.descripcion = ''
+    form.prioridad = 'baja'
+    form.solicitante = ''
+
     setTimeout(() => {
-      exito.value = ''
-    }, 3000)
-    return
-  }
-
-  if (response.error.response?.status !== 422) {
-    errorGeneral.value = 'No se pudo crear el ticket.'
+      mensajeExito.value = ''
+      router.push('/')
+    }, 1200)
   }
 }
 </script>
@@ -47,57 +64,57 @@ async function handleSubmit() {
   <section class="page">
     <h1>Nuevo ticket</h1>
 
-    <p v-if="!auth.estaAutenticado" class="mensaje-error">
-      Debes iniciar sesión para crear tickets.
+    <p v-if="!estaAutenticado" class="mensaje-error">
+      Debes iniciar sesión para crear un ticket.
     </p>
 
     <form v-else class="ticket-form" @submit.prevent="handleSubmit">
-      <div class="form-group">
+      <div class="campo">
         <label for="asunto">Asunto</label>
-        <input id="asunto" v-model="formulario.asunto" type="text" />
-        <small v-if="ticketsState.erroresFormulario.asunto" class="mensaje-error">
-          {{ ticketsState.erroresFormulario.asunto }}
-        </small>
+        <input id="asunto" v-model="form.asunto" type="text" />
+        <p v-if="erroresFormulario.asunto" class="campo__error">
+          {{ erroresFormulario.asunto }}
+        </p>
       </div>
 
-      <div class="form-group">
+      <div class="campo">
         <label for="descripcion">Descripción</label>
-        <textarea id="descripcion" v-model="formulario.descripcion" rows="5" />
-        <small v-if="ticketsState.erroresFormulario.descripcion" class="mensaje-error">
-          {{ ticketsState.erroresFormulario.descripcion }}
-        </small>
+        <textarea id="descripcion" v-model="form.descripcion" rows="5" />
+        <p v-if="erroresFormulario.descripcion" class="campo__error">
+          {{ erroresFormulario.descripcion }}
+        </p>
       </div>
 
-      <div class="form-group">
+      <div class="campo">
         <label for="prioridad">Prioridad</label>
-        <select id="prioridad" v-model="formulario.prioridad">
-          <option disabled value="">Selecciona una prioridad</option>
+        <select id="prioridad" v-model="form.prioridad">
           <option value="baja">baja</option>
           <option value="media">media</option>
           <option value="alta">alta</option>
         </select>
-        <small v-if="ticketsState.erroresFormulario.prioridad" class="mensaje-error">
-          {{ ticketsState.erroresFormulario.prioridad }}
-        </small>
+        <p v-if="erroresFormulario.prioridad" class="campo__error">
+          {{ erroresFormulario.prioridad }}
+        </p>
       </div>
 
-      <div class="form-group">
+      <div class="campo">
         <label for="solicitante">Solicitante</label>
-        <input id="solicitante" v-model="formulario.solicitante" type="text" />
-        <small v-if="ticketsState.erroresFormulario.solicitante" class="mensaje-error">
-          {{ ticketsState.erroresFormulario.solicitante }}
-        </small>
+        <input id="solicitante" v-model="form.solicitante" type="text" />
+        <p v-if="erroresFormulario.solicitante" class="campo__error">
+          {{ erroresFormulario.solicitante }}
+        </p>
       </div>
 
-      <p v-if="errorGeneral" class="mensaje-error">{{ errorGeneral }}</p>
-      <p v-if="exito" class="mensaje-ok">{{ exito }}</p>
+      <p v-if="mensajeExito" class="mensaje-exito">
+        {{ mensajeExito }}
+      </p>
 
       <button
         class="btn btn--primary"
         type="submit"
-        :disabled="ticketsState.creandoTicket"
+        :disabled="!formularioCompleto || creandoTicket"
       >
-        {{ ticketsState.creandoTicket ? 'Creando...' : 'Crear ticket' }}
+        {{ creandoTicket ? 'Guardando...' : 'Crear ticket' }}
       </button>
     </form>
   </section>

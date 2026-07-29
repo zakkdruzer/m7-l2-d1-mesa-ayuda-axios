@@ -3,27 +3,35 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 
 const router = useRouter()
-const auth = useAuth()
+
+const {
+  usuario,
+  estaAutenticado,
+  cerrarSesion,
+} = useAuth()
 
 function salir() {
-  auth.cerrarSesion()
+  cerrarSesion()
   router.push('/login')
 }
 </script>
 
 <template>
   <nav class="navbar">
-    <router-link to="/" class="navbar__brand">Mesa de Ayuda</router-link>
+    <router-link to="/" class="navbar__brand">
+      Mesa de Ayuda
+    </router-link>
 
     <div class="navbar__right">
-      <span v-if="auth.usuario" class="navbar__user">
-        {{ auth.usuario.username }} ({{ auth.usuario.rol }})
+      <span v-if="usuario" class="navbar__user">
+        {{ usuario.username }} ({{ usuario.rol }})
       </span>
 
-      <template v-if="auth.estaAutenticado">
+      <template v-if="estaAutenticado">
         <router-link to="/nuevo-ticket" class="btn btn--secondary">
           Nuevo ticket
         </router-link>
+
         <button class="btn btn--ghost" @click="salir">
           Cerrar sesión
         </button>

@@ -1,5 +1,9 @@
 import api from './api'
 
-export const login = (username, password) => {
-  return api.post('/login', { username, password })
+export function login(username, password, duracionMinutos) {
+  return api.post('/login', {
+    username,
+    password,
+    duracionMinutos,
+  })
 }
