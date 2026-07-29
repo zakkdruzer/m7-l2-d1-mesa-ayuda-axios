@@ -38,9 +38,6 @@ async function handleSubmit() {
   <section class="login-page">
     <h1>Iniciar sesión</h1>
 
-    <p>DEBUG loading: {{ cargandoLogin }}</p>
-    <p>DEBUG error: {{ errorLogin }}</p>
-
     <form class="login-form" @submit.prevent="handleSubmit">
       <div class="campo">
         <label for="username">Usuario</label>
