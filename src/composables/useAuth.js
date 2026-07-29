@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { login as loginRequest } from '@/services/authService'
+import { login as loginRequest } from '../services/authService'
 
 const token = ref(localStorage.getItem('token') || null)
 const usuario = ref(null)

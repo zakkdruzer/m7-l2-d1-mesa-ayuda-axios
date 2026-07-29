@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
-import LoginView from '@/views/LoginView.vue'
-import NuevoTicketView from '@/views/NuevoTicketView.vue'
+import HomeView from '../views/HomeView.vue'
+import LoginView from '../views/LoginView.vue'
+import NuevoTicketView from '../views/NuevoTicketView.vue'
 
 const routes = [
   {
@@ -18,9 +18,9 @@ const routes = [
     path: '/nuevo-ticket',
     name: 'nuevo-ticket',
     component: NuevoTicketView,
-    beforeEnter: (to, from, next) => {
+    beforeEnter: () => {
       const token = localStorage.getItem('token')
-      token ? next() : next('/login')
+      return token ? true : '/login'
     },
   },
 ]

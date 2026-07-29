@@ -1,25 +1,18 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useTickets } from '@/composables/useTickets'
-import TicketCard from '@/components/TicketCard.vue'
-import TicketDetalle from '@/components/TicketDetalle.vue'
+import { onMounted } from 'vue'
+import { useTickets } from '../composables/useTickets'
 
-const ticketsState = useTickets()
-const mostrarDetalle = ref(false)
+const {
+  tickets,
+  meta,
+  cargandoLista,
+  errorLista,
+  cargarTickets,
+} = useTickets()
 
 onMounted(() => {
-  ticketsState.cargarTickets()
+  cargarTickets()
 })
-
-async function verDetalle(id) {
-  mostrarDetalle.value = true
-  await ticketsState.cargarDetalle(id)
-}
-
-function cerrarDetalle() {
-  mostrarDetalle.value = false
-  ticketsState.limpiarDetalle()
-}
 </script>
 
 <template>
@@ -28,45 +21,45 @@ function cerrarDetalle() {
       <h1>Tickets</h1>
 
       <div class="page__actions">
-        <span v-if="ticketsState.meta">
-          Total: {{ ticketsState.meta.total }}
-        </span>
+        <span>Total: {{ meta?.total ?? 0 }}</span>
 
         <button
           class="btn btn--primary"
-          :disabled="ticketsState.cargandoLista"
-          @click="ticketsState.cargarTickets()"
+          :disabled="cargandoLista"
+          @click="cargarTickets()"
         >
-          {{ ticketsState.cargandoLista ? 'Cargando...' : 'Recargar' }}
+          {{ cargandoLista ? 'Cargando...' : 'Recargar' }}
         </button>
       </div>
     </div>
 
-    <p v-if="ticketsState.cargandoLista">Cargando tickets...</p>
+    <p>DEBUG loading: {{ cargandoLista }}</p>
+    <p>DEBUG error: {{ errorLista }}</p>
+    <p>DEBUG tickets length: {{ tickets.length }}</p>
+    <p>DEBUG total meta: {{ meta?.total }}</p>
 
-    <p v-else-if="ticketsState.errorLista" class="mensaje-error">
-      {{ ticketsState.errorLista }}
+    <p v-if="cargandoLista">Cargando tickets...</p>
+
+    <p v-else-if="errorLista" class="mensaje-error">
+      {{ errorLista }}
     </p>
 
-    <p v-else-if="ticketsState.tickets.length === 0">
+    <p v-else-if="tickets.length === 0">
       No hay tickets para mostrar.
     </p>
 
     <div v-else class="ticket-grid">
-      <TicketCard
-        v-for="ticket in ticketsState.tickets"
-        :key="ticket.id"
-        :ticket="ticket"
-        @ver-detalle="verDetalle"
-      />
+      <article
+        v-for="ticket in tickets"
+        :key="ticket.id ?? ticket.codigo"
+        style="border:1px solid red; padding:12px; margin-bottom:12px; background:white;"
+      >
+        <p>ID: {{ ticket.id ?? ticket.codigo }}</p>
+        <p>Asunto: {{ ticket.asunto }}</p>
+        <p>Prioridad: {{ ticket.prioridad }}</p>
+        <p>Estado: {{ ticket.estado }}</p>
+        <p>Solicitante: {{ ticket.solicitante }}</p>
+      </article>
     </div>
-
-    <TicketDetalle
-      v-if="mostrarDetalle"
-      :ticket="ticketsState.ticketDetalle"
-      :cargando="ticketsState.cargandoDetalle"
-      :error="ticketsState.errorDetalle"
-      @cerrar="cerrarDetalle"
-    />
   </section>
 </template>

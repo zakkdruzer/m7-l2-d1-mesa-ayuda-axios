@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import { useAuth } from '@/composables/useAuth'
-import { useTickets } from '@/composables/useTickets'
+import { useAuth } from '../composables/useAuth'
+import { useTickets } from '../composables/useTickets'
 
 const auth = useAuth()
 const ticketsState = useTickets()

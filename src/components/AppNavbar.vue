@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from '../composables/useAuth'
 
 const router = useRouter()
 const auth = useAuth()
@@ -17,9 +17,9 @@ function salir() {
 
     <div class="navbar__right">
       <template v-if="auth.estaAutenticado">
-        <span class="navbar__user">
-          {{ auth.usuario?.username }} ({{ auth.usuario?.rol }})
-        </span>
+        <span v-if="auth.usuario">
+  {{ auth.usuario.username }} ({{ auth.usuario.rol }})
+</span>
         <router-link to="/nuevo-ticket" class="btn btn--secondary">
           Nuevo ticket
         </router-link>
