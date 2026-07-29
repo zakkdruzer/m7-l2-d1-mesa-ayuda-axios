@@ -173,3 +173,14 @@ select {
 .mensaje-ok {
   color: var(--success);
 }
+
+.paginacion {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.paginacion__resumen {
+  margin: 16px 0;
+}

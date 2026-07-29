@@ -18,10 +18,30 @@ const {
 } = useTickets()
 
 const mostrarDetalle = ref(false)
+const paginaActual = ref(1)
 
 onMounted(() => {
-  cargarTickets()
+  cargarTickets({ pagina: paginaActual.value })
 })
+
+async function recargar() {
+  await cargarTickets({ pagina: paginaActual.value })
+}
+
+async function irPagina(pagina) {
+  paginaActual.value = pagina
+  await cargarTickets({ pagina })
+}
+
+async function siguientePagina() {
+  if (!meta.value?.haySiguiente) return
+  await irPagina(paginaActual.value + 1)
+}
+
+async function paginaAnterior() {
+  if (!meta.value?.hayAnterior) return
+  await irPagina(paginaActual.value - 1)
+}
 
 async function verDetalle(id) {
   mostrarDetalle.value = true
@@ -45,7 +65,7 @@ function cerrarDetalle() {
         <button
           class="btn btn--primary"
           :disabled="cargandoLista"
-          @click="cargarTickets()"
+          @click="recargar"
         >
           {{ cargandoLista ? 'Cargando...' : 'Recargar' }}
         </button>
@@ -62,14 +82,41 @@ function cerrarDetalle() {
       No hay tickets para mostrar.
     </p>
 
-    <div v-else class="ticket-grid">
-      <TicketCard
-        v-for="ticket in tickets"
-        :key="ticket.id ?? ticket.codigo"
-        :ticket="ticket"
-        @ver-detalle="verDetalle"
-      />
-    </div>
+    <template v-else>
+      <p class="paginacion__resumen">
+        Mostrando {{ tickets.length }} de {{ meta?.total ?? 0 }} tickets
+        — página {{ meta?.pagina ?? 1 }} de {{ meta?.totalPaginas ?? 1 }}
+      </p>
+
+      <div class="ticket-grid">
+        <TicketCard
+          v-for="ticket in tickets"
+          :key="ticket.id ?? ticket.codigo"
+          :ticket="ticket"
+          @ver-detalle="verDetalle"
+        />
+      </div>
+
+      <div class="paginacion">
+        <button
+          class="btn btn--secondary"
+          :disabled="!meta?.hayAnterior || cargandoLista"
+          @click="paginaAnterior"
+        >
+          Anterior
+        </button>
+
+        <span>Página {{ meta?.pagina ?? 1 }}</span>
+
+        <button
+          class="btn btn--secondary"
+          :disabled="!meta?.haySiguiente || cargandoLista"
+          @click="siguientePagina"
+        >
+          Siguiente
+        </button>
+      </div>
+    </template>
 
     <TicketDetalle
       v-if="mostrarDetalle"
