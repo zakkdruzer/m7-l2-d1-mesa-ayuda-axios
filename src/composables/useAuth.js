@@ -8,6 +8,9 @@ const usuario = ref(usuarioGuardado ? JSON.parse(usuarioGuardado) : null)
 
 const cargandoLogin = ref(false)
 const errorLogin = ref('')
+const segundosRestantes = ref(0)
+
+let timerId = null
 
 function decodePayload(jwt) {
   try {
@@ -16,6 +19,55 @@ function decodePayload(jwt) {
   } catch {
     return null
   }
+}
+
+function actualizarTiempoRestante() {
+  if (!token.value) {
+    segundosRestantes.value = 0
+    return
+  }
+
+  const payload = decodePayload(token.value)
+
+  if (!payload?.exp) {
+    segundosRestantes.value = 0
+    return
+  }
+
+  const ahoraEnSegundos = Math.floor(Date.now() / 1000)
+  const restante = payload.exp - ahoraEnSegundos
+
+  segundosRestantes.value = restante > 0 ? restante : 0
+}
+
+function detenerTimerSesion() {
+  if (timerId) {
+    clearInterval(timerId)
+    timerId = null
+  }
+}
+
+function cerrarSesionInterno() {
+  detenerTimerSesion()
+  token.value = null
+  usuario.value = null
+  errorLogin.value = ''
+  segundosRestantes.value = 0
+  localStorage.removeItem('token')
+  localStorage.removeItem('usuario')
+}
+
+function iniciarTimerSesion() {
+  detenerTimerSesion()
+  actualizarTiempoRestante()
+
+  timerId = setInterval(() => {
+    actualizarTiempoRestante()
+
+    if (segundosRestantes.value <= 0 && token.value) {
+      cerrarSesionInterno()
+    }
+  }, 1000)
 }
 
 if (token.value && !usuario.value) {
@@ -29,8 +81,18 @@ if (token.value && !usuario.value) {
   }
 }
 
+if (token.value) {
+  iniciarTimerSesion()
+}
+
 export function useAuth() {
   const estaAutenticado = computed(() => !!token.value)
+
+  const tiempoSesionFormateado = computed(() => {
+    const minutos = Math.floor(segundosRestantes.value / 60)
+    const segundos = segundosRestantes.value % 60
+    return `${minutos}:${String(segundos).padStart(2, '0')}`
+  })
 
   async function iniciarSesion({ username, password, duracionMinutos }) {
     cargandoLogin.value = true
@@ -61,6 +123,8 @@ export function useAuth() {
         localStorage.setItem('usuario', JSON.stringify(usuario.value))
       }
 
+      iniciarTimerSesion()
+
       return { ok: true }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -76,11 +140,7 @@ export function useAuth() {
   }
 
   function cerrarSesion() {
-    token.value = null
-    usuario.value = null
-    errorLogin.value = ''
-    localStorage.removeItem('token')
-    localStorage.removeItem('usuario')
+    cerrarSesionInterno()
   }
 
   return {
@@ -89,6 +149,8 @@ export function useAuth() {
     cargandoLogin,
     errorLogin,
     estaAutenticado,
+    segundosRestantes,
+    tiempoSesionFormateado,
     iniciarSesion,
     cerrarSesion,
   }

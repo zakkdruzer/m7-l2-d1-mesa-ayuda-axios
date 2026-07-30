@@ -7,6 +7,7 @@ const router = useRouter()
 const {
   usuario,
   estaAutenticado,
+  tiempoSesionFormateado,
   cerrarSesion,
 } = useAuth()
 
@@ -25,6 +26,10 @@ function salir() {
     <div class="navbar__right">
       <span v-if="usuario" class="navbar__user">
         {{ usuario.username }} ({{ usuario.rol }})
+      </span>
+
+      <span v-if="estaAutenticado" class="navbar__session-time">
+        Sesión: {{ tiempoSesionFormateado }}
       </span>
 
       <template v-if="estaAutenticado">

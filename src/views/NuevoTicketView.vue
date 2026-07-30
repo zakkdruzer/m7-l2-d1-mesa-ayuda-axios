@@ -6,6 +6,7 @@ import { useTickets } from '../composables/useTickets'
 
 const router = useRouter()
 const { estaAutenticado } = useAuth()
+
 const {
   crearNuevoTicket,
   creandoTicket,
@@ -14,6 +15,7 @@ const {
 } = useTickets()
 
 const mensajeExito = ref('')
+const erroresLocales = ref({})
 
 const form = reactive({
   asunto: '',
@@ -31,11 +33,38 @@ const formularioCompleto = computed(() => {
   )
 })
 
+function validarFormulario() {
+  const errores = {}
+
+  if (form.asunto.trim().length < 8) {
+    errores.asunto = 'El asunto debe tener al menos 8 caracteres.'
+  }
+
+  if (form.descripcion.trim().length < 15) {
+    errores.descripcion = 'La descripción debe tener al menos 15 caracteres.'
+  }
+
+  if (!['baja', 'media', 'alta'].includes(form.prioridad)) {
+    errores.prioridad = 'La prioridad debe ser baja, media o alta.'
+  }
+
+  if (form.solicitante.trim().length < 3) {
+    errores.solicitante = 'El solicitante debe tener al menos 3 caracteres.'
+  }
+
+  erroresLocales.value = errores
+  return Object.keys(errores).length === 0
+}
+
 async function handleSubmit() {
-  if (!estaAutenticado.value || !formularioCompleto.value || creandoTicket.value) return
+  if (!estaAutenticado.value || creandoTicket.value) return
 
   mensajeExito.value = ''
+  erroresLocales.value = {}
   limpiarErroresFormulario()
+
+  const esValido = validarFormulario()
+  if (!esValido) return
 
   const resultado = await crearNuevoTicket({
     asunto: form.asunto,
@@ -72,7 +101,10 @@ async function handleSubmit() {
       <div class="campo">
         <label for="asunto">Asunto</label>
         <input id="asunto" v-model="form.asunto" type="text" />
-        <p v-if="erroresFormulario.asunto" class="campo__error">
+        <p v-if="erroresLocales.asunto" class="campo__error">
+          {{ erroresLocales.asunto }}
+        </p>
+        <p v-else-if="erroresFormulario.asunto" class="campo__error">
           {{ erroresFormulario.asunto }}
         </p>
       </div>
@@ -80,7 +112,10 @@ async function handleSubmit() {
       <div class="campo">
         <label for="descripcion">Descripción</label>
         <textarea id="descripcion" v-model="form.descripcion" rows="5" />
-        <p v-if="erroresFormulario.descripcion" class="campo__error">
+        <p v-if="erroresLocales.descripcion" class="campo__error">
+          {{ erroresLocales.descripcion }}
+        </p>
+        <p v-else-if="erroresFormulario.descripcion" class="campo__error">
           {{ erroresFormulario.descripcion }}
         </p>
       </div>
@@ -92,7 +127,10 @@ async function handleSubmit() {
           <option value="media">media</option>
           <option value="alta">alta</option>
         </select>
-        <p v-if="erroresFormulario.prioridad" class="campo__error">
+        <p v-if="erroresLocales.prioridad" class="campo__error">
+          {{ erroresLocales.prioridad }}
+        </p>
+        <p v-else-if="erroresFormulario.prioridad" class="campo__error">
           {{ erroresFormulario.prioridad }}
         </p>
       </div>
@@ -100,7 +138,10 @@ async function handleSubmit() {
       <div class="campo">
         <label for="solicitante">Solicitante</label>
         <input id="solicitante" v-model="form.solicitante" type="text" />
-        <p v-if="erroresFormulario.solicitante" class="campo__error">
+        <p v-if="erroresLocales.solicitante" class="campo__error">
+          {{ erroresLocales.solicitante }}
+        </p>
+        <p v-else-if="erroresFormulario.solicitante" class="campo__error">
           {{ erroresFormulario.solicitante }}
         </p>
       </div>
