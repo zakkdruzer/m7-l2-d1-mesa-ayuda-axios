@@ -252,7 +252,3 @@ npm run dev
 ## Para ver el resultado completo debes montar el backend en local, aunque también puedes ver el resultado parcial en:
 
 https://zakkdruzer.github.io/m7-l2-d1-mesa-ayuda-axios
-
-## Autor
-
-Proyecto desarrollado como actividad práctica de consumo de datos desde una API con Vue 3, Axios y JWT, ampliado con opcionales de experiencia de usuario, sesión y búsqueda.
